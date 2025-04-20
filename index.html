@@ -1,77 +1,131 @@
+<!-- index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>AIXO Bot Configuration</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <style>
-    body { font-family: sans-serif; max-width: 600px; margin: 2rem auto; }
-    input, button { font-size: 1rem; padding: .5em; margin: .25em 0; width: 100%; }
-    pre { background: #f5f5f5; padding: 1em; overflow-x: auto; height: 200px; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Facebook Bot Configuration</title>
+    <style>
+        :root {
+            --primary: #CE2F16;
+            --secondary: #fe8916;
+            --accent: #ff952a;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f6f7;
+        }
+
+        .config-form {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background: var(--secondary);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: var(--accent);
+        }
+    </style>
 </head>
 <body>
-  <h1>AIXO Facebook‐Page Bot</h1>
+    <div class="config-form">
+        <h1>Facebook Bot Configuration</h1>
+        <form id="configForm">
+            <div class="form-group">
+                <label for="verifyToken">Verify Token:</label>
+                <input type="text" id="verifyToken" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="pageToken">Page Access Token:</label>
+                <textarea id="pageToken" required></textarea>
+            </div>
 
-  <h2>1. Facebook Developer Setup</h2>
-  <p>
-    In your Facebook App → Webhooks → Subscribe to Page events, set:
-  </p>
-  <ul>
-    <li><strong>Callback URL</strong>:  
-      <code>https://<strong>&lt;your‑gh‑user&gt;</strong>.github.io/&lt;your‑repo&gt;/webhook?hub.verify_token=aixobot</code>
-    </li>
-    <li><strong>Verify Token</strong>: <code>aixobot</code></li>
-    <li>Select the **"messages"**, **"message_reactions"**, etc. events you want, then click **Verify and Save**.</li>
-  </ul>
+            <div class="form-group">
+                <label for="admins">Admin IDs (comma separated):</label>
+                <input type="text" id="admins" required>
+            </div>
 
-  <h2>2. Manual Tester</h2>
-  <form id="tester">
-    <label>hub.mode:<br>
-      <input type="text" name="hub.mode" value="subscribe">
-    </label><br>
-    <label>hub.verify_token:<br>
-      <input type="text" name="hub.verify_token" value="aixobot">
-    </label><br>
-    <label>hub.challenge:<br>
-      <input type="text" name="hub.challenge" value="123456">
-    </label><br>
-    <button type="submit">Send to Backend</button>
-  </form>
-  <h3>Response:</h3>
-  <pre id="result">&nbsp;</pre>
+            <button type="submit">Save Configuration</button>
+        </form>
+        <div id="status"></div>
+    </div>
 
-  <h2>3. Live Logs</h2>
-  <pre id="logs">Connecting…</pre>
+    <script>
+        const API_ENDPOINT = 'https://your-server-url.com'; // Replace with your server URL
 
-  <script>
-    // 2. Manual tester: point at your real backend
-    document.getElementById('tester').addEventListener('submit', async e => {
-      e.preventDefault();
-      const form = new FormData(e.target);
-      const qs = new URLSearchParams();
-      for (let [k,v] of form.entries()) qs.set(k, v);
-      try {
-        const res = await fetch('http://194.164.125.5:629/webhook?' + qs.toString())
-        document.getElementById('result').textContent = await res.text();
-      } catch (err) {
-        document.getElementById('result').textContent = '❌ ' + err;
-      }
-    });
+        document.getElementById('configForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const config = {
+                VERIFY_TOKEN: document.getElementById('verifyToken').value,
+                PAGE_ACCESS_TOKEN: document.getElementById('pageToken').value,
+                ADMINS: document.getElementById('admins').value.split(',').map(id => id.trim()),
+                BOTNAME: "AIXO",
+                THEME_SETUP: {
+                    THEME: "Fiery",
+                    HTML: ["#CE2F16", "#fe8916", "#ff952a"]
+                }
+            };
 
-    // 3. Live log viewer via WebSocket
-    const logs = document.getElementById('logs');
-    const ws   = new WebSocket('ws://194.164.125.5:629');
-    ws.onmessage = ev => {
-      const msg = JSON.parse(ev.data);
-      if (msg.type === 'log') {
-        logs.textContent += msg.data + '\n';
-        logs.scrollTop = logs.scrollHeight;
-      }
-    };
-    ws.onopen    = () => { logs.textContent = '[WebSocket connected]\n'; };
-    ws.onerror   = () => { logs.textContent += '[WebSocket error]\n'; };
-    ws.onclose   = () => { logs.textContent += '[WebSocket closed]\n'; };
-  </script>
+            try {
+                const response = await fetch(`${API_ENDPOINT}/update-config`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(config)
+                });
+
+                if (response.ok) {
+                    showStatus('Configuration saved successfully!', 'success');
+                } else {
+                    showStatus('Error saving configuration', 'error');
+                }
+            } catch (error) {
+                showStatus('Network error: ' + error.message, 'error');
+            }
+        });
+
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = type;
+        }
+    </script>
 </body>
 </html>
