@@ -1,131 +1,55 @@
-<!-- index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Facebook Bot Configuration</title>
-    <style>
-        :root {
-            --primary: #CE2F16;
-            --secondary: #fe8916;
-            --accent: #ff952a;
-        }
-
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            background: #f5f6f7;
-        }
-
-        .config-form {
-            background: white;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-            color: var(--primary);
-        }
-
-        input, textarea {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-
-        button {
-            background: var(--secondary);
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-
-        button:hover {
-            background: var(--accent);
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AIXO Facebook Webhook</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #0e0e0e;
+      color: #fff;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      flex-direction: column;
+    }
+    h1 {
+      color: #fe8916;
+    }
+    .info {
+      margin: 10px 0;
+      background: #1a1a1a;
+      padding: 20px;
+      border-radius: 10px;
+      border: 1px solid #333;
+      max-width: 600px;
+      text-align: center;
+    }
+    a {
+      color: #ff952a;
+    }
+  </style>
 </head>
 <body>
-    <div class="config-form">
-        <h1>Facebook Bot Configuration</h1>
-        <form id="configForm">
-            <div class="form-group">
-                <label for="verifyToken">Verify Token:</label>
-                <input type="text" id="verifyToken" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="pageToken">Page Access Token:</label>
-                <textarea id="pageToken" required></textarea>
-            </div>
-
-            <div class="form-group">
-                <label for="admins">Admin IDs (comma separated):</label>
-                <input type="text" id="admins" required>
-            </div>
-
-            <button type="submit">Save Configuration</button>
-        </form>
-        <div id="status"></div>
-    </div>
-
-    <script>
-        const API_ENDPOINT = 'https://your-server-url.com'; // Replace with your server URL
-
-        document.getElementById('configForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const config = {
-                VERIFY_TOKEN: document.getElementById('verifyToken').value,
-                PAGE_ACCESS_TOKEN: document.getElementById('pageToken').value,
-                ADMINS: document.getElementById('admins').value.split(',').map(id => id.trim()),
-                BOTNAME: "AIXO",
-                THEME_SETUP: {
-                    THEME: "Fiery",
-                    HTML: ["#CE2F16", "#fe8916", "#ff952a"]
-                }
-            };
-
-            try {
-                const response = await fetch(`${API_ENDPOINT}/update-config`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(config)
-                });
-
-                if (response.ok) {
-                    showStatus('Configuration saved successfully!', 'success');
-                } else {
-                    showStatus('Error saving configuration', 'error');
-                }
-            } catch (error) {
-                showStatus('Network error: ' + error.message, 'error');
-            }
-        });
-
-        function showStatus(message, type) {
-            const statusDiv = document.getElementById('status');
-            statusDiv.textContent = message;
-            statusDiv.className = type;
-        }
-    </script>
+  <h1>👋 AIXO Webhook Interface</h1>
+  <div class="info">
+    <p>This GitHub Page is a placeholder for Facebook Webhook verification.</p>
+    <p>Please ensure your <strong>actual backend server</strong> is online and reachable at:</p>
+    <code>http://194.164.125.5:629/webhook</code>
+    <p>To verify the token, Facebook sends a GET request like this:</p>
+    <code>
+      GET /webhook?hub.mode=subscribe&hub.verify_token=aixobot&hub.challenge=CHALLENGE_CODE
+    </code>
+    <p>Your backend should respond with:</p>
+    <code>CHALLENGE_CODE</code>
+    <p>
+      Check your backend at:
+      <a href="http://194.164.125.5:629/webhook" target="_blank">http://194.164.125.5:629/webhook</a>
+    </p>
+  </div>
 </body>
 </html>
