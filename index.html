@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AIXO Bot Configuration</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    body { font-family: sans-serif; max-width: 600px; margin: 2rem auto; }
+    input, button { font-size: 1rem; padding: .5em; margin: .25em 0; width: 100%; }
+    pre { background: #f5f5f5; padding: 1em; overflow-x: auto; height: 200px; }
+  </style>
+</head>
+<body>
+  <h1>AIXO Facebook‐Page Bot</h1>
+
+  <h2>1. Facebook Developer Setup</h2>
+  <p>
+    In your Facebook App → Webhooks → Subscribe to Page events, set:
+  </p>
+  <ul>
+    <li><strong>Callback URL</strong>:  
+      <code>https://<strong>&lt;your‑gh‑user&gt;</strong>.github.io/&lt;your‑repo&gt;/webhook?hub.verify_token=aixobot</code>
+    </li>
+    <li><strong>Verify Token</strong>: <code>aixobot</code></li>
+    <li>Select the **"messages"**, **"message_reactions"**, etc. events you want, then click **Verify and Save**.</li>
+  </ul>
+
+  <h2>2. Manual Tester</h2>
+  <form id="tester">
+    <label>hub.mode:<br>
+      <input type="text" name="hub.mode" value="subscribe">
+    </label><br>
+    <label>hub.verify_token:<br>
+      <input type="text" name="hub.verify_token" value="aixobot">
+    </label><br>
+    <label>hub.challenge:<br>
+      <input type="text" name="hub.challenge" value="123456">
+    </label><br>
+    <button type="submit">Send to Backend</button>
+  </form>
+  <h3>Response:</h3>
+  <pre id="result">&nbsp;</pre>
+
+  <h2>3. Live Logs</h2>
+  <pre id="logs">Connecting…</pre>
+
+  <script>
+    // 2. Manual tester: point at your real backend
+    document.getElementById('tester').addEventListener('submit', async e => {
+      e.preventDefault();
+      const form = new FormData(e.target);
+      const qs = new URLSearchParams();
+      for (let [k,v] of form.entries()) qs.set(k, v);
+      try {
+        const res = await fetch('http://194.164.125.5:629/webhook?' + qs.toString())
+        document.getElementById('result').textContent = await res.text();
+      } catch (err) {
+        document.getElementById('result').textContent = '❌ ' + err;
+      }
+    });
+
+    // 3. Live log viewer via WebSocket
+    const logs = document.getElementById('logs');
+    const ws   = new WebSocket('ws://194.164.125.5:629');
+    ws.onmessage = ev => {
+      const msg = JSON.parse(ev.data);
+      if (msg.type === 'log') {
+        logs.textContent += msg.data + '\n';
+        logs.scrollTop = logs.scrollHeight;
+      }
+    };
+    ws.onopen    = () => { logs.textContent = '[WebSocket connected]\n'; };
+    ws.onerror   = () => { logs.textContent += '[WebSocket error]\n'; };
+    ws.onclose   = () => { logs.textContent += '[WebSocket closed]\n'; };
+  </script>
+</body>
+</html>
